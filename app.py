@@ -915,7 +915,7 @@ loan_service = LoanRecommendationService()
 transaction_service = TransactionService(banking_service)
 digilocker_service = DigilockerService()
 otp_service = OTPService(
-    brevo_api_key="", # add brevo api key
+   api_key = "YOUR_SENDINBLUE_KEY", # add brevo api key
     sender_email="", # add your email here
     sender_name="VyomNext Banking"
 )
