@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block title %}VyomNext - EMI Calculator{% endblock %}
+
+{% block page_title %}EMI Calculator{% endblock %}
+{% block page_subtitle %}Calculate your loan EMI, view payment breakdown and amortization schedule{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="static/css/emi.css">
+{% endblock %}
+
+{% block page_content %}
+<div class="emi-calculator-container">
+    <!-- Floating decorative icons -->
+    
+    <!-- Calculator Form Card - Full Width -->
+    <div class="calculator-card">
+        <div class="card-header">
+            <h2 class="card-title">EMI Calculator</h2>
+            <p class="card-subtitle">Enter your loan details to calculate EMI</p>
+        </div>
+        
+        <form id="emiForm" class="emi-form">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="principal">Loan Amount (₹)</label>
+                    <input type="number" id="principal" name="principal" value="1000000" min="1" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="rate">Interest Rate (% per annum) <span class="range-value" id="rateValue">12%</span></label>
+                    <input type="range" id="rateSlider" min="5" max="20" value="12" step="0.1">
+                    <input type="number" id="rate" name="rate" value="12" min="1" max="50" step="0.1" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="tenure">Loan Tenure <span class="range-value" id="tenureValue">60 months</span></label>
+                    <input type="range" id="tenureSlider" min="6" max="360" value="60" step="6">
+                    <input type="number" id="tenure" name="tenure" value="60" min="1" max="600" required>
+                </div>
+            </div>
+
+            <button type="submit" class="calculate-btn">Calculate EMI</button>
+        </form>
+
+        <div class="loading" id="loading">Calculating...</div>
+        <div class="error" id="error"></div>
+    </div>
+
+    <!-- Results Card - Full Width Below -->
+    <div class="results-card">
+        <div class="results" id="results">
+            <div class="card-header">
+                <h2 class="card-title">EMI Details</h2>
+                <p class="card-subtitle">Your loan payment breakdown</p>
+            </div>
+            
+            <div class="results-grid">
+                <div class="result-item">
+                    <span class="result-label">Monthly EMI</span>
+                    <span class="result-value emi-amount" id="emiAmount">₹0</span>
+                </div>
+                
+                <div class="result-item">
+                    <span class="result-label">Total Amount</span>
+                    <span class="result-value" id="totalAmount">₹0</span>
+                </div>
+                
+                <div class="result-item">
+                    <span class="result-label">Total Interest</span>
+                    <span class="result-value" id="totalInterest">₹0</span>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <h3 class="section-title">Payment Breakdown</h3>
+                <canvas id="pieChart" class="pie-chart"></canvas>
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-color principal"></div>
+                        <span>Principal</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color interest"></div>
+                        <span>Interest</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="schedule-table">
+                <h3 class="section-title">Amortization Schedule (First 12 months)</h3>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Month</th>
+                                <th>EMI</th>
+                                <th>Principal</th>
+                                <th>Interest</th>
+                                <th>Balance</th>
+                            </tr>
+                        </thead>
+                        <tbody id="scheduleBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="static/js/emi.js"></script>
+{% endblock %}

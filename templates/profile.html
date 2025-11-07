@@ -1,0 +1,271 @@
+{% extends "base.html" %}
+
+{% block title %}VyomNext - Profile{% endblock %}
+
+{% block page_title %}User Profile{% endblock %}
+{% block page_subtitle %}Manage your personal information and account settings{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="static/css/profile.css">
+{% endblock %}
+
+{% block page_content %}
+<div id="profile-content">
+    <!-- Success/Error Messages -->
+    <div id="message-container" style="display: none;">
+        <div id="success-message" class="message success-message" style="display: none;">
+            <i class="icon">✓</i>
+            <span class="message-text"></span>
+        </div>
+        <div id="error-message" class="message error-message" style="display: none;">
+            <i class="icon">✗</i>
+            <span class="message-text"></span>
+        </div>
+    </div>
+
+    <!-- Profile Overview Card -->
+    <div class="profile-overview-card">
+        <div class="profile-header">
+            <div class="profile-avatar">
+                <img id="profile-avatar-img" src="{{ user.avatar_url or '/static/images/default-avatar.png' }}" alt="Profile Picture">
+                <div class="avatar-overlay">
+                    <i class="camera-icon">📷</i>
+                </div>
+                <input type="file" id="avatar-upload" accept="image/*" style="display: none;">
+            </div>
+            <div class="profile-info">
+                <h2 id="profile-name">{{ user.full_name or 'User Name' }}</h2>
+                <p id="profile-email">{{ user.email or 'user@email.com' }}</p>
+                <span class="profile-status {{ 'verified' if user.is_verified else 'unverified' }}">
+                    {{ 'Verified Account' if user.is_verified else 'Unverified Account' }}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Content Tabs -->
+    <div class="profile-tabs">
+        <button class="tab-button active" onclick="showTab('personal-info')">Personal Information</button>
+        <button class="tab-button" onclick="showTab('security')">Security Settings</button>
+        <button class="tab-button" onclick="showTab('preferences')">Preferences</button>
+    </div>
+
+    <!-- Personal Information Tab -->
+    <div id="personal-info" class="tab-content active">
+        <div class="profile-section">
+            <div class="section-header">
+                <h3>Personal Information</h3>
+                <button class="edit-btn" onclick="toggleEdit('personal')">
+                    <i class="edit-icon">✏️</i> Edit
+                </button>
+            </div>
+            
+            <form id="personal-info-form" class="profile-form">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="first_name">First Name</label>
+                        <input type="text" id="first_name" name="first_name" value="{{ user.first_name or '' }}" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="last_name">Last Name</label>
+                        <input type="text" id="last_name" name="last_name" value="{{ user.last_name or '' }}" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" name="email" value="{{ user.email or '' }}" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="phone">Phone Number</label>
+                        <input type="tel" id="phone" name="phone" value="{{ user.phone or '' }}" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="date_of_birth">Date of Birth</label>
+                        <input type="date" id="date_of_birth" name="date_of_birth" value="{{ user.date_of_birth or '' }}" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="gender">Gender</label>
+                        <select id="gender" name="gender" disabled>
+                            <option value="">Select Gender</option>
+                            <option value="male" {{ 'selected' if user.gender == 'male' else '' }}>Male</option>
+                            <option value="female" {{ 'selected' if user.gender == 'female' else '' }}>Female</option>
+                            <option value="other" {{ 'selected' if user.gender == 'other' else '' }}>Other</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="address-section">
+                    <h4>Address Information</h4>
+                    <div class="form-grid">
+                        <div class="form-group full-width">
+                            <label for="address_line1">Address Line 1</label>
+                            <input type="text" id="address_line1" name="address_line1" value="{{ user.address_line1 or '' }}" readonly>
+                        </div>
+                        <div class="form-group full-width">
+                            <label for="address_line2">Address Line 2</label>
+                            <input type="text" id="address_line2" name="address_line2" value="{{ user.address_line2 or '' }}" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label for="city">City</label>
+                            <input type="text" id="city" name="city" value="{{ user.city or '' }}" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label for="state">State</label>
+                            <input type="text" id="state" name="state" value="{{ user.state or '' }}" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label for="pincode">PIN Code</label>
+                            <input type="text" id="pincode" name="pincode" value="{{ user.pincode or '' }}" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label for="country">Country</label>
+                            <input type="text" id="country" name="country" value="{{ user.country or 'India' }}" readonly>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions" style="display: none;">
+                    <button type="button" class="btn btn-secondary" onclick="cancelEdit('personal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Security Settings Tab -->
+    <div id="security" class="tab-content">
+        <div class="profile-section">
+            <div class="section-header">
+                <h3>Security Settings</h3>
+            </div>
+            
+            <!-- Change Password -->
+            <div class="security-item">
+                <h4>Change Password</h4>
+                <form id="password-form" class="profile-form">
+                    <div class="form-group">
+                        <label for="current_password">Current Password</label>
+                        <input type="password" id="current_password" name="current_password" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="new_password">New Password</label>
+                        <input type="password" id="new_password" name="new_password" required>
+                        <small class="form-help">Must be at least 8 characters with uppercase, lowercase, number, and special character</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="confirm_password">Confirm New Password</label>
+                        <input type="password" id="confirm_password" name="confirm_password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Update Password</button>
+                </form>
+            </div>
+
+            <!-- Two-Factor Authentication -->
+            <div class="security-item">
+                <h4>Two-Factor Authentication</h4>
+                <div class="security-option">
+                    <div class="option-info">
+                        <span class="option-title">SMS Authentication</span>
+                        <span class="option-description">Receive verification codes via SMS</span>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="sms_2fa" {{ 'checked' if user.sms_2fa_enabled else '' }}>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="security-option">
+                    <div class="option-info">
+                        <span class="option-title">Email Authentication</span>
+                        <span class="option-description">Receive verification codes via email</span>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="email_2fa" {{ 'checked' if user.email_2fa_enabled else '' }}>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Login Sessions -->
+            <div class="security-item">
+                <h4>Active Sessions</h4>
+                <div id="active-sessions">
+                    <!-- Sessions will be loaded dynamically -->
+                </div>
+                <button class="btn btn-secondary" onclick="loadActiveSessions()">Refresh Sessions</button>
+                <button class="btn btn-danger" onclick="terminateAllSessions()">Terminate All Sessions</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Preferences Tab -->
+    <div id="preferences" class="tab-content">
+        <div class="profile-section">
+            <div class="section-header">
+                <h3>Preferences</h3>
+            </div>
+            
+            <form id="preferences-form" class="profile-form">
+                <div class="preference-group">
+                    <h4>Notification Preferences</h4>
+                    <div class="preference-item">
+                        <div class="preference-info">
+                            <span class="preference-title">Email Notifications</span>
+                            <span class="preference-description">Receive account updates via email</span>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" name="email_notifications" {{ 'checked' if user.email_notifications else '' }}>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="preference-item">
+                        <div class="preference-info">
+                            <span class="preference-title">SMS Notifications</span>
+                            <span class="preference-description">Receive transaction alerts via SMS</span>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" name="sms_notifications" {{ 'checked' if user.sms_notifications else '' }}>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="preference-item">
+                        <div class="preference-info">
+                            <span class="preference-title">Marketing Communications</span>
+                            <span class="preference-description">Receive promotional offers and updates</span>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" name="marketing_communications" {{ 'checked' if user.marketing_communications else '' }}>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="preference-group">
+                    <h4>Display Preferences</h4>
+                    <div class="form-group">
+                        <label for="language">Language</label>
+                        <select id="language" name="language">
+                            <option value="en" {{ 'selected' if user.language == 'en' else '' }}>English</option>
+                            <option value="hi" {{ 'selected' if user.language == 'hi' else '' }}>हिन्दी</option>
+                            <option value="mr" {{ 'selected' if user.language == 'mr' else '' }}>मराठी</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="currency">Currency</label>
+                        <select id="currency" name="currency">
+                            <option value="INR" {{ 'selected' if user.currency == 'INR' else '' }}>Indian Rupee (₹)</option>
+                            <option value="USD" {{ 'selected' if user.currency == 'USD' else '' }}>US Dollar ($)</option>
+                            <option value="EUR" {{ 'selected' if user.currency == 'EUR' else '' }}>Euro (€)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Save Preferences</button>
+            </form>
+        </div>
+    </div>
+
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="static/js/profile.js"></script>
+{% endblock %}

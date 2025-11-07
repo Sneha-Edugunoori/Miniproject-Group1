@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VyomNext - Login</title>
+    <link rel="stylesheet" href="static/css/login.css">
+</head>
+<body>
+    <div class="login-container">
+        <div class="logo">
+            <h1>VyomNext</h1>
+        </div>
+
+        <div class="form-header">
+            <h2 class="form-title">Welcome Back</h2>
+            <p class="form-subtitle">Sign in to your VyomNext account</p>
+        </div>
+
+        <div class="success-message" id="successMessage" style="display: none;">
+            Login successful! Redirecting to your dashboard...
+        </div>
+
+        <div class="form-container">
+            <!-- Login Form -->
+            <form id="loginForm" class="form" novalidate>
+                <div class="form-group">
+                    <label class="form-label" for="loginCredential">Email or Mobile Number</label>
+                    <input type="text" id="loginCredential" name="loginCredential" class="form-input" placeholder="Enter your email or mobile number" required autocomplete="username">
+                    <div class="error-message" id="credentialError"></div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="loginPassword">Password</label>
+                    <div class="password-group">
+                        <input type="password" id="loginPassword" name="loginPassword" class="form-input" placeholder="Enter your password" required autocomplete="current-password">
+                        <button type="button" class="password-toggle-btn" onclick="togglePassword('loginPassword')">Show</button>
+                    </div>
+                    <div class="forgot-password">
+                        <a href="#" onclick="forgotPassword()">Forgot Password?</a>
+                    </div>
+                    <div class="error-message" id="passwordError"></div>
+                </div>
+
+                <button type="submit" class="btn-login" id="loginBtn">
+                    Sign In
+                </button>
+            </form>
+        </div>
+
+        <div class="form-footer">
+            <p>Don't have an account? <a href="/register">Create Account</a></p>
+            <p style="margin-top: 1rem; font-size: 0.8rem; color: #999;">© 2025 VyomNext Banking Platform</p>
+        </div>
+    </div>
+
+    <script src="static/js/login.js"></script>
+</body>
+</html>

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VyomNext - Verification</title>
+    <link rel="stylesheet" href="static/css/verify.css">
+</head>
+<body>
+    <div class="container">
+        <div class="verification-card">
+            <div class="logo">
+                <h1>VyomNext</h1>
+            </div>
+            
+            <div class="welcome-section">
+                <h2>Verify Your Identity</h2>
+                <p>Enter your Aadhar card number and phone number for verification</p>
+            </div>
+
+            <form id="verificationForm" class="verification-form">
+                <!-- Step 1: Aadhar and Phone Number -->
+                <div id="step1" class="step active">
+                    <div class="input-group">
+                        <label for="aadharNumber">Aadhar Card Number</label>
+                        <input 
+                            type="text" 
+                            id="aadharNumber" 
+                            name="aadharNumber" 
+                            placeholder="Enter your 12-digit Aadhar number"
+                            maxlength="12"
+                            required
+                        >
+                        <span class="error-message" id="aadharError"></span>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="phoneNumber">Phone Number</label>
+                        <input 
+                            type="tel" 
+                            id="phoneNumber" 
+                            name="phoneNumber" 
+                            placeholder="Enter your mobile number"
+                            maxlength="10"
+                            required
+                        >
+                        <span class="error-message" id="phoneError"></span>
+                    </div>
+
+                    <button type="button" id="sendOtpBtn" class="primary-btn">
+                        Send OTP
+                    </button>
+                </div>
+
+                <!-- Step 2: OTP Verification -->
+                <div id="step2" class="step">
+                    <div class="otp-section">
+                        <p class="otp-info">OTP sent to <span id="maskedPhone"></span></p>
+                        
+                        <div class="input-group">
+                            <label for="otpInput">Enter OTP</label>
+                            <input 
+                                type="text" 
+                                id="otpInput" 
+                                name="otpInput" 
+                                placeholder="Enter 6-digit OTP"
+                                maxlength="6"
+                                required
+                            >
+                            <span class="error-message" id="otpError"></span>
+                        </div>
+
+                        <div class="otp-timer">
+                            <span id="timerText">Resend OTP in <span id="countdown">30</span>s</span>
+                            <button type="button" id="resendOtpBtn" class="link-btn" disabled>
+                                Resend OTP
+                            </button>
+                        </div>
+
+                        <div class="button-group">
+                            <button type="button" id="backBtn" class="secondary-btn">
+                                Back
+                            </button>
+                            <button type="button" id="verifyOtpBtn" class="primary-btn">
+                                Verify OTP
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Success Message with Account Details -->
+                <div id="successMessage" class="step success-step">
+                    <div class="success-icon">✓</div>
+                    <h3>Verification Successful!</h3>
+                    <p>Your identity has been verified successfully.</p>
+                    
+                    <div id="accountSummary" class="account-summary" style="display: none;">
+                        <h4 style="margin-bottom: 15px; color: #333;">Your Banking Summary</h4>
+                        <div id="accountsList"></div>
+                        <div id="totalBalance" style="margin-top: 15px; font-size: 18px; font-weight: bold; color: #27ae60;"></div>
+                    </div>
+                    
+                    <button type="button" id="continueBtn" class="primary-btn">
+                        Continue to Banking
+                    </button>
+                </div>
+            </form>
+
+            <div class="footer-links">
+                <span>Need help? <a href="#" class="link">Contact Support</a></span>
+            </div>
+        </div>
+    </div>
+
+    <script src="static/js/scripts.js"></script>
+</body>
+</html>

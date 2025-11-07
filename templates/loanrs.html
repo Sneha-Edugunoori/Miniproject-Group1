@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+
+{% block title %}VyomNext - Loan Recommendation{% endblock %}
+
+{% block page_title %}AI-Powered Loan Recommendation System{% endblock %}
+{% block page_subtitle %}Get personalized loan recommendations based on your financial profile and credit analysis{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="static/css/loanrs.css">
+{% endblock %}
+
+{% block page_content %}
+<div class="loan-recommendation-container">
+    <form id="loanForm" class="loan-form" enctype="multipart/form-data">
+        <div class="form-grid">
+            <!-- CIBIL Score -->
+            <div class="form-group">
+                <label class="form-label">CIBIL Score</label>
+                <div class="input-wrapper">
+                    <input 
+                        type="number" 
+                        id="cibil"
+                        name="cibil"
+                        class="form-input" 
+                        placeholder="Enter your CIBIL score"
+                        min="300" 
+                        max="900" 
+                        value="706"
+                        required
+                    >
+                    <div class="input-suffix">
+                        <span class="cibil-status cibil-good" id="cibilStatus">Good</span>
+                    </div>
+                </div>
+                <div class="input-hint">Score range: 300 - 900</div>
+            </div>
+
+            <!-- Annual Income -->
+            <div class="form-group">
+                <label class="form-label">Annual Income</label>
+                <div class="input-wrapper">
+                    <span class="input-prefix">₹</span>
+                    <input 
+                        type="text" 
+                        id="income"
+                        name="income"
+                        class="form-input with-prefix" 
+                        placeholder="2000000"
+                        value="2000000"
+                        required
+                    >
+                </div>
+                <div class="input-hint">Enter your gross annual income</div>
+            </div>
+
+            <!-- Asset/Property Value -->
+            <div class="form-group">
+                <label class="form-label">Asset / Property Value</label>
+                <div class="input-wrapper">
+                    <span class="input-prefix">₹</span>
+                    <input 
+                        type="text" 
+                        id="asset"
+                        name="asset"
+                        class="form-input with-prefix" 
+                        placeholder="300000"
+                        value="300000"
+                        required
+                    >
+                </div>
+                <div class="input-hint">Total value of your assets/property</div>
+            </div>
+
+            <!-- Loan Type -->
+            <div class="form-group">
+                <label class="form-label">Loan Type</label>
+                <div class="select-wrapper">
+                    <select id="loanType" name="loan_type" class="form-select" required>
+                        <option value="home">Home Loan</option>
+                        <option value="personal">Personal Loan</option>
+                        <option value="car">Car Loan</option>
+                        <option value="business">Business Loan</option>
+                        <option value="education">Education Loan</option>
+                    </select>
+                </div>
+                <div class="input-hint">Select the type of loan you need</div>
+            </div>
+        </div>
+
+        <!-- Bank Statement Upload -->
+        <div class="form-group file-upload-section">
+            <label class="form-label">Bank Statement Upload</label>
+            <div class="file-upload-wrapper">
+                <div class="file-upload-area" onclick="document.getElementById('fileInput').click()">
+                    <div class="file-upload-content">
+                        <svg class="file-icon" viewBox="0 0 24 24" width="32" height="32">
+                            <path fill="currentColor" d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+                        </svg>
+                        <div class="file-text">
+                            <span class="file-primary" id="fileText">Upload Month Bank Statement</span>
+                            <span class="file-secondary">PDF format, max 200MB</span>
+                        </div>
+                    </div>
+                </div>
+                <input type="file" id="fileInput" name="statement" accept=".pdf" style="display: none;" required>
+            </div>
+        </div>
+
+        <!-- Generate Button -->
+        <div class="form-actions">
+            <button type="submit" class="generate-btn" id="generateBtn">
+                <span class="btn-text">Generate Loan Recommendations</span>
+                <span class="loading-spinner" id="loadingSpinner" style="display: none;">
+                    <span class="spinner"></span>
+                </span>
+            </button>
+        </div>
+    </form>
+
+    <!-- Results Section -->
+    <div class="loan-results" id="loanResults" style="display: none;">
+        <div class="results-header">
+            <h2>Your Loan Recommendations</h2>
+            <div class="results-subtitle">Based on your financial profile</div>
+        </div>
+        <div class="results-content" id="resultsContent"></div>
+    </div>
+
+    <!-- Loading Animation -->
+    <div class="processing-indicator" id="processingIndicator" style="display: none;">
+        <div class="processing-animation">
+            <div class="processing-circle"></div>
+            <div class="processing-text">
+                <h3>Processing Your Information</h3>
+                <p>Analyzing your financial profile and generating personalized recommendations...</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="static/js/loanrs.js"></script>
+{% endblock %}

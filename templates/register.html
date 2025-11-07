@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VyomNext - Register</title>
+    <link rel="stylesheet" href="static/css/register.css">
+</head>
+<body>
+    <div class="register-container">
+        <div class="logo">
+            <h1>VyomNext</h1>
+        </div>
+
+        <div class="form-header">
+            <h2 class="form-title">Create Account</h2>
+            <p class="form-subtitle">Join VyomNext Banking Platform</p>
+        </div>
+
+        <div class="success-message" id="successMessage" style="display: none;">
+            Registration successful! Redirecting to login...
+        </div>
+
+        <div class="form-container">
+            <form id="registerForm" class="form" novalidate>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="username">Username</label>
+                        <input type="text" id="username" name="username" class="form-input" placeholder="Choose a username" required>
+                        <div class="error-message" id="usernameError"></div>
+                        <div class="success-message-field" id="usernameSuccess"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="fullName">Full Name</label>
+                        <input type="text" id="fullName" name="fullName" class="form-input" placeholder="Enter your full name" required>
+                        <div class="error-message" id="fullNameError"></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="email">Email Address</label>
+                    <input type="email" id="email" name="email" class="form-input" placeholder="Enter your email address" required>
+                    <div class="error-message" id="emailError"></div>
+                    <div class="success-message-field" id="emailSuccess"></div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="aadharNumber">Aadhar Number</label>
+                        <input type="text" id="aadharNumber" name="aadharNumber" class="form-input" placeholder="12-digit Aadhar number" pattern="[0-9]{12}" maxlength="12" required>
+                        <div class="error-message" id="aadharNumberError"></div>
+                        <div class="success-message-field" id="aadharNumberSuccess"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="mobileNumber">Mobile Number</label>
+                        <input type="tel" id="mobileNumber" name="mobileNumber" class="form-input" placeholder="10-digit mobile number" pattern="[0-9]{10}" maxlength="10" required>
+                        <div class="error-message" id="mobileNumberError"></div>
+                        <div class="success-message-field" id="mobileNumberSuccess"></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="password">Password</label>
+                    <div class="password-group">
+                        <input type="password" id="password" name="password" class="form-input" placeholder="Create a strong password" required minlength="6">
+                        <button type="button" class="password-toggle-btn" onclick="togglePassword('password')">Show</button>
+                    </div>
+                    <div class="password-strength" id="passwordStrength"></div>
+                    <div class="error-message" id="passwordError"></div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="confirmPassword">Confirm Password</label>
+                    <div class="password-group">
+                        <input type="password" id="confirmPassword" name="confirmPassword" class="form-input" placeholder="Confirm your password" required>
+                        <button type="button" class="password-toggle-btn" onclick="togglePassword('confirmPassword')">Show</button>
+                    </div>
+                    <div class="error-message" id="confirmPasswordError"></div>
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="terms" name="terms" required>
+                    <label for="terms">I agree to the <a href="#" onclick="showTerms()">Terms of Service</a> and <a href="#" onclick="showPrivacy()">Privacy Policy</a></label>
+                </div>
+                <div class="error-message" id="termsError"></div>
+
+                <button type="submit" class="btn-register" id="registerBtn">
+                    Create Account
+                </button>
+            </form>
+        </div>
+
+        <div class="form-footer">
+            <p>Already have an account? <a href="/login">Sign In</a></p>
+            <p style="margin-top: 1rem; font-size: 0.8rem; color: #999;">© 2025 VyomNext Banking Platform</p>
+        </div>
+    </div>
+
+    <!-- OTP Verification Modal -->
+    <div id="otpModal" class="otp-modal">
+        <div class="otp-modal-content">
+            <div class="otp-modal-header">
+                <h2>Verify Your Email</h2>
+                <p>We've sent a 6-digit code to <strong id="otpEmail"></strong></p>
+            </div>
+
+            <div class="otp-timer">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                        <path d="M12 6v6l4 2"></path>
+                </svg>
+                <span>OTP expires in: <strong id="otpTimer">10:00</strong></span>
+            </div>
+
+            <div class="otp-inputs-container">
+                <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" inputmode="numeric" autocomplete="off">
+                <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" inputmode="numeric" autocomplete="off">
+                <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" inputmode="numeric" autocomplete="off">
+                <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" inputmode="numeric" autocomplete="off">
+                <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" inputmode="numeric" autocomplete="off">
+                <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" inputmode="numeric" autocomplete="off">
+            </div>
+
+            <div class="otp-error" id="otpError"></div>
+
+            <button type="button" class="btn-verify-otp" id="verifyOtpBtn">
+                Verify OTP
+            </button>
+
+            <div class="otp-resend">
+                <p>Didn't receive the code?</p>
+                <button type="button" class="btn-resend-otp" id="resendOtpBtn">
+                    Resend OTP <span id="resendTimer"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="static/js/register.js"></script>
+</body>
+</html>

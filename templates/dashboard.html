@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VyomNext Banking - Dashboard</title>
+    <!-- Fixed static file path -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+</head>
+<body>
+    <!-- Mobile Menu Button -->
+    <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h2>VyomNext</h2>
+            <button class="close-btn" onclick="toggleSidebar()">×</button>
+        </div>
+        <nav class="sidebar-menu">
+            <button class="menu-item active" onclick="showContent('manage-accounts')" data-section="manage-accounts">
+                <i>🏦</i>
+                MANAGE ACCOUNTS
+            </button>
+            <button class="menu-item" onclick="showContent('loan')" data-section="loan">
+                <i>💰</i>
+                LOAN RECOMMENDATION
+            </button>
+            <button class="menu-item" onclick="showContent('payments')" data-section="payments">
+                <i>💳</i>
+                PAYMENTS
+            </button>
+            <button class="menu-item" onclick="showContent('services')" data-section="services">
+                <i>⚙</i>
+                SERVICES
+            </button>
+            <button class="menu-item" onclick="showContent('profile')" data-section="profile">
+                <i>👤</i>
+                PROFILE
+            </button>
+            <button class="menu-item" onclick="showContent('digilocker')" data-section="digilocker">
+                <i>🔒</i>
+                DIGILOCKER
+            </button>
+            <button class="menu-item logout-btn" onclick="logout()">
+                <i>🚪</i>
+                LOGOUT
+            </button>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Manage Accounts Content -->
+        <div class="manage-accounts active" id="manage-accounts">
+            <div class="content-header">
+                <h1 id="welcome-message">
+                    {% if user %}
+                        Hi {{ user.full_name or user.username }}, Here's a summary of your linked bank accounts
+                    {% else %}
+                        Hi Guest, Here's a summary of your linked bank accounts
+                    {% endif %}
+                </h1>
+            </div>
+
+            <div class="account-summary">
+                <p class="summary-subtitle">Total Balance Across All Accounts</p>
+                <div class="total-balance" id="total-balance">₹0.00</div>
+            </div>
+
+            <div class="accounts-grid" id="accounts-grid">
+                <!-- Account cards will be dynamically populated -->
+                <div style="text-align: center; padding: 3rem; color: #666;">
+                    <h3>Loading your accounts...</h3>
+                    <p>Please wait while we fetch your banking information.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard Content -->
+        <div class="dashboard-content" id="dashboard">
+            <div class="content-header">
+                <h1>Dashboard</h1>
+                <p>Overview of your banking activities</p>
+            </div>
+            <div style="text-align: center; padding: 3rem; color: #666;">
+                <h3>Dashboard content will be displayed here</h3>
+                <p>Charts, graphs, and financial insights coming soon...</p>
+            </div>
+        </div>
+
+        <!-- Other Content Sections -->
+        <div class="dashboard-content" id="loan">
+            <div class="content-header">
+                <h1>Loan Recommendation</h1>
+                <p>Personalized loan offers based on your profile</p>
+            </div>
+            <div style="text-align: center; padding: 3rem; color: #666;">
+                <h3>Loan recommendations will be displayed here</h3>
+            </div>
+        </div>
+
+        <div class="dashboard-content" id="payments">
+            <div class="content-header">
+                <h1>Payments</h1>
+                <p>Make payments and transfer funds</p>
+            </div>
+            <div style="text-align: center; padding: 3rem; color: #666;">
+                <h3>Payment options will be displayed here</h3>
+            </div>
+        </div>
+
+        <div class="dashboard-content" id="services">
+            <div class="content-header">
+                <h1>Services</h1>
+                <p>Additional banking services</p>
+            </div>
+            <div style="text-align: center; padding: 3rem; color: #666;">
+                <h3>Banking services will be displayed here</h3>
+            </div>
+        </div>
+
+        <div class="dashboard-content" id="profile">
+            <div class="content-header">
+                <h1>Profile</h1>
+                <p>Manage your account settings</p>
+            </div>
+            <div id="profile-content">
+                {% if user %}
+                <div style="max-width: 600px; margin: 0 auto; text-align: left;">
+                    <div style="background: white; padding: 2rem; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+                        <h3 style="margin-bottom: 1.5rem; color: #333;">Account Information</h3>
+                        <div style="display: grid; gap: 1rem;">
+                            <div><strong>Full Name:</strong> {{ user.full_name or 'Not provided' }}</div>
+                            <div><strong>Username:</strong> {{ user.username }}</div>
+                            <div><strong>Email:</strong> {{ user.email or 'Not provided' }}</div>
+                            <div><strong>Phone:</strong> {{ user.mobile or 'Not provided' }}</div>
+                            <div><strong>Aadhaar:</strong> {{ ('****-****-' + user.aadhar_number[-4:]) if user.aadhar_number else 'Not provided' }}</div>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div style="text-align: center; padding: 3rem; color: #666;">
+                    <h3>Profile information will be displayed here</h3>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="dashboard-content" id="digilocker">
+            <div class="content-header">
+                <h1>DigiLocker</h1>
+                <p>Secure document storage</p>
+            </div>
+            <div style="text-align: center; padding: 3rem; color: #666;">
+                <h3>DigiLocker integration will be displayed here</h3>
+            </div>
+        </div>
+
+        <!-- Loading State -->
+        <div class="loading" id="loading" style="display: none;">
+            <div class="spinner"></div>
+            <p>Loading your account information...</p>
+        </div>
+
+        <!-- Error State -->
+        <div class="error-state" id="error-state" style="display: none; text-align: center; padding: 3rem; color: #e74c3c;">
+            <h3>Unable to load banking data</h3>
+            <p id="error-message">Please check your connection and try again.</p>
+            <button onclick="location.reload()" style="padding: 10px 20px; background: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                Retry
+            </button>
+        </div>
+    </div>
+
+    <!-- Chatbot Icon -->
+    <div class="chatbot-icon" onclick="openChatbot()"></div>
+
+    <!-- Fixed static file path -->
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+</body>
+</html>

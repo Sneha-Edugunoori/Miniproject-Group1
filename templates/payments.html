@@ -1,0 +1,1060 @@
+{% extends "base.html" %}
+
+{% block page_title %}Payments{% endblock %}
+{% block page_subtitle %}Transfer money, pay bills, and manage your transactions{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="static/css/payments.css">
+<style>
+/* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.modal-content {
+    background-color: #fff;
+    margin: 5% auto;
+    padding: 0;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from {
+        transform: translateY(-50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.modal-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h3 {
+    margin: 0;
+    font-size: 20px;
+    color: #333;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 28px;
+    color: #999;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s;
+}
+
+.close-btn:hover {
+    color: #333;
+}
+
+.modal-body {
+    padding: 24px;
+}
+
+.account-selection {
+    margin-bottom: 20px;
+}
+
+.account-selection label {
+    display: block;
+    margin-bottom: 12px;
+    font-weight: 600;
+    color: #555;
+}
+
+.account-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.account-option {
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.account-option:hover {
+    border-color: #4CAF50;
+    background-color: #f9f9f9;
+}
+
+.account-option.selected {
+    border-color: #4CAF50;
+    background-color: #e8f5e9;
+}
+
+.account-info {
+    flex: 1;
+}
+
+.account-bank {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 4px;
+}
+
+.account-number {
+    color: #666;
+    font-size: 14px;
+}
+
+.account-balance {
+    text-align: right;
+    font-weight: 600;
+    color: #4CAF50;
+}
+
+.transfer-summary {
+    background-color: #f5f5f5;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 20px;
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.summary-row:last-child {
+    margin-bottom: 0;
+    padding-top: 8px;
+    border-top: 1px solid #ddd;
+    font-weight: 600;
+}
+
+.summary-label {
+    color: #666;
+}
+
+.summary-value {
+    color: #333;
+}
+
+.modal-footer {
+    padding: 16px 24px;
+    border-top: 1px solid #e0e0e0;
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+}
+
+.btn {
+    padding: 10px 24px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-cancel {
+    background-color: #f5f5f5;
+    color: #666;
+}
+
+.btn-cancel:hover {
+    background-color: #e0e0e0;
+}
+
+.btn-confirm {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.btn-confirm:hover {
+    background-color: #45a049;
+}
+
+.btn-confirm:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+.loading-spinner {
+    text-align: center;
+    padding: 40px;
+}
+
+.spinner {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #4CAF50;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 16px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.error-message {
+    background-color: #ffebee;
+    color: #c62828;
+    padding: 12px;
+    border-radius: 6px;
+    margin-bottom: 16px;
+    font-size: 14px;
+}
+
+.no-accounts {
+    text-align: center;
+    padding: 40px;
+    color: #666;
+}
+</style>
+{% endblock %}
+
+{% block page_content %}
+<div class="quick-transfer-section">
+    <h2 class="section-title">Quick Transfer</h2>
+    <div class="transfer-form">
+        <div class="form-group">
+            <label class="form-label" for="accountNumber">Recipient Account Number</label>
+            <input type="text" id="accountNumber" class="form-input" placeholder="Enter account number">
+        </div>
+        <div class="form-group">
+            <label class="form-label" for="ifscCode">IFSC Code</label>
+            <input type="text" id="ifscCode" class="form-input" placeholder="Enter IFSC code" maxlength="11">
+        </div>
+        <div class="form-group">
+            <label class="form-label" for="amount">Amount (₹)</label>
+            <input type="number" id="amount" class="form-input" placeholder="Enter amount">
+        </div>
+        <button class="transfer-btn" onclick="handleTransfer()">
+            ✈ Transfer Now
+        </button>
+    </div>
+</div>
+
+<!-- Account Selection Modal -->
+<div id="accountModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Select Source Account</h3>
+            <button class="close-btn" onclick="closeModal()">&times;</button>
+        </div>
+        <div class="modal-body" id="modalBody">
+            <div class="loading-spinner">
+                <div class="spinner"></div>
+                <p>Loading your accounts...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Transaction PIN Modal -->
+<div id="pinModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Enter Transaction PIN</h3>
+            <button class="close-btn" onclick="closePinModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="pin-entry-section">
+                <p class="pin-instruction">Enter your 4-6 digit transaction PIN to authorize this transfer</p>
+                
+                <div class="pin-input-container">
+                    <input type="text" id="pin1" class="pin-box" maxlength="1" 
+                           oninput="handlePinInput(this, 1)" 
+                           onkeydown="handlePinKeydown(event, 1)"
+                           inputmode="numeric" pattern="[0-9]*">
+                    <input type="text" id="pin2" class="pin-box" maxlength="1" 
+                           oninput="handlePinInput(this, 2)" 
+                           onkeydown="handlePinKeydown(event, 2)"
+                           inputmode="numeric" pattern="[0-9]*">
+                    <input type="text" id="pin3" class="pin-box" maxlength="1" 
+                           oninput="handlePinInput(this, 3)" 
+                           onkeydown="handlePinKeydown(event, 3)"
+                           inputmode="numeric" pattern="[0-9]*">
+                    <input type="text" id="pin4" class="pin-box" maxlength="1" 
+                           oninput="handlePinInput(this, 4)" 
+                           onkeydown="handlePinKeydown(event, 4)"
+                           inputmode="numeric" pattern="[0-9]*">
+                    <input type="text" id="pin5" class="pin-box" maxlength="1" 
+                           oninput="handlePinInput(this, 5)" 
+                           onkeydown="handlePinKeydown(event, 5)"
+                           inputmode="numeric" pattern="[0-9]*">
+                    <input type="text" id="pin6" class="pin-box" maxlength="1" 
+                           oninput="handlePinInput(this, 6)" 
+                           onkeydown="handlePinKeydown(event, 6)"
+                           inputmode="numeric" pattern="[0-9]*">
+                </div>
+                
+                <div class="transfer-summary">
+                    <div class="summary-row">
+                        <span class="summary-label">From Account:</span>
+                        <span class="summary-value" id="pinFromAccount">-</span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="summary-label">To Account:</span>
+                        <span class="summary-value" id="pinToAccount">-</span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="summary-label">Amount:</span>
+                        <span class="summary-value" id="pinAmount">-</span>
+                    </div>
+                </div>
+                
+                <p class="pin-help">
+                    <small>
+                        💡 Your PIN is encrypted and secure. If you don't have a PIN set, 
+                        please contact your bank.
+                    </small>
+                </p>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-cancel" onclick="closePinModal()">Cancel</button>
+            <button class="btn btn-confirm" id="pinConfirmBtn" disabled onclick="confirmTransfer()">
+                Confirm Transfer
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+/* PIN Modal Specific Styles */
+.pin-entry-section {
+    text-align: center;
+    padding: 20px 0;
+}
+
+.pin-instruction {
+    color: #666;
+    font-size: 14px;
+    margin-bottom: 24px;
+}
+
+.pin-input-container {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.pin-box {
+    width: 45px;
+    height: 55px;
+    text-align: center;
+    font-size: 24px;
+    font-weight: bold;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    outline: none;
+    transition: all 0.2s;
+    caret-color: transparent;
+}
+
+.pin-box:focus {
+    border-color: #4CAF50;
+    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+}
+
+.pin-box.filled {
+    background-color: #e8f5e9;
+    border-color: #4CAF50;
+    color: #4CAF50;
+}
+
+.pin-help {
+    text-align: center;
+    color: #666;
+    margin-top: 16px;
+    padding: 12px;
+    background-color: #f5f5f5;
+    border-radius: 6px;
+}
+
+.pin-help small {
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+/* Update transfer summary in PIN modal */
+#pinModal .transfer-summary {
+    margin: 20px auto;
+    max-width: 400px;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    .pin-box {
+        width: 40px;
+        height: 50px;
+        font-size: 20px;
+    }
+    
+    .pin-input-container {
+        gap: 8px;
+    }
+}
+</style>
+
+<script>
+// Update PIN modal summary when opening
+function openPinModal() {
+    document.getElementById('pinModal').style.display = 'block';
+    transactionPin = '';
+    updatePinDisplay();
+    
+    // Update summary
+    if (selectedAccount) {
+        document.getElementById('pinFromAccount').textContent = selectedAccount.account_number;
+    }
+    document.getElementById('pinToAccount').textContent = transferData.recipientAccount;
+    document.getElementById('pinAmount').textContent = '₹' + transferData.amount.toLocaleString('en-IN');
+    
+    // Focus on first PIN input
+    setTimeout(() => {
+        document.getElementById('pin1').focus();
+    }, 100);
+}
+</script>
+
+<div class="recent-transactions">
+    <h2 class="section-title">Recent Transactions</h2>
+    
+    <div id="transactionsLoading" class="loading-spinner" style="display: none;">
+        <div class="spinner"></div>
+        <p>Loading transactions...</p>
+    </div>
+    
+    <div id="transactionsError" class="error-message" style="display: none;"></div>
+    
+    <div id="transactionsList">
+        <!-- Transactions will be dynamically loaded here -->
+    </div>
+    
+    <div id="noTransactions" style="display: none; text-align: center; padding: 40px; color: #666;">
+        <p>No recent transactions found.</p>
+    </div>
+</div>
+
+<script>
+// Fetch and display recent transactions
+async function loadRecentTransactions() {
+    const transactionsList = document.getElementById('transactionsList');
+    const loadingSpinner = document.getElementById('transactionsLoading');
+    const errorDiv = document.getElementById('transactionsError');
+    const noTransactionsDiv = document.getElementById('noTransactions');
+    
+    // Show loading
+    loadingSpinner.style.display = 'block';
+    transactionsList.innerHTML = '';
+    errorDiv.style.display = 'none';
+    noTransactionsDiv.style.display = 'none';
+    
+    try {
+        // Fetch user's banking data (includes all accounts)
+        const response = await fetch('/api/dashboard-data');
+        
+        if (!response.ok) {
+            throw new Error('Failed to fetch banking data');
+        }
+        
+        const data = await response.json();
+        const accounts = data.banking_data?.accounts || [];
+        
+        if (accounts.length === 0) {
+            loadingSpinner.style.display = 'none';
+            noTransactionsDiv.style.display = 'block';
+            return;
+        }
+        
+        // Fetch transactions from all accounts in parallel
+        const transactionPromises = accounts.map(account => 
+            fetch(`/api/account/transactions?account_number=${account.account_number}&bank_code=${account.bank_code}`)
+                .then(res => res.json())
+                .then(result => ({
+                    account: account,
+                    transactions: result.transactions || []
+                }))
+                .catch(err => ({
+                    account: account,
+                    transactions: []
+                }))
+        );
+        
+        const results = await Promise.all(transactionPromises);
+        
+        // Combine all transactions from all accounts
+        let allTransactions = [];
+        results.forEach(result => {
+            const accountTransactions = result.transactions.map(txn => ({
+                ...txn,
+                bank_name: result.account.bank_name,
+                account_number: result.account.account_number
+            }));
+            allTransactions = allTransactions.concat(accountTransactions);
+        });
+        
+        // Sort by timestamp (most recent first)
+        allTransactions.sort((a, b) => {
+            const dateA = new Date(a.timestamp);
+            const dateB = new Date(b.timestamp);
+            return dateB - dateA;
+        });
+        
+        // Display only the 10 most recent transactions
+        const recentTransactions = allTransactions.slice(0, 10);
+        
+        if (recentTransactions.length === 0) {
+            loadingSpinner.style.display = 'none';
+            noTransactionsDiv.style.display = 'block';
+            return;
+        }
+        
+        // Render transactions
+        transactionsList.innerHTML = recentTransactions.map(txn => {
+            const isCredit = txn.type.toLowerCase() === 'credit';
+            const amount = parseFloat(txn.amount);
+            const date = new Date(txn.timestamp);
+            const formattedDate = date.toLocaleDateString('en-IN', { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric' 
+            });
+            
+            return `
+                <div class="transaction-item">
+                    <div class="transaction-info">
+                        <div class="transaction-icon ${isCredit ? 'credit' : 'debit'}">
+                            ${isCredit ? '↙' : '↗'}
+                        </div>
+                        <div class="transaction-details">
+                            <div class="transaction-name">${txn.description || (isCredit ? 'Credit' : 'Debit')}</div>
+                            <div class="transaction-date">
+                                ${formattedDate} • ${txn.bank_name}
+                                <br>
+                                <small style="color: #999;">A/C: ${txn.account_number}</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="transaction-right">
+                        <div class="transaction-amount ${isCredit ? 'amount-credit' : 'amount-debit'}">
+                            ${isCredit ? '+' : '-'}₹${amount.toLocaleString('en-IN', {maximumFractionDigits: 2})}
+                        </div>
+                        <span class="transaction-status completed">Completed</span>
+                    </div>
+                </div>
+            `;
+        }).join('');
+        
+        loadingSpinner.style.display = 'none';
+        
+    } catch (error) {
+        console.error('Error loading transactions:', error);
+        loadingSpinner.style.display = 'none';
+        errorDiv.textContent = 'Failed to load transactions. Please try again.';
+        errorDiv.style.display = 'block';
+    }
+}
+
+// Load transactions when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    loadRecentTransactions();
+    
+    // Set active menu item for payments page
+    const paymentsMenuItem = document.querySelector('[data-section="payments"]');
+    if (paymentsMenuItem) {
+        paymentsMenuItem.classList.add('active');
+    }
+});
+
+// Reload transactions after successful transfer
+const originalConfirmTransfer = confirmTransfer;
+confirmTransfer = async function() {
+    const result = await originalConfirmTransfer();
+    if (result && result.status === 'ok') {
+        // Reload transactions after successful transfer
+        setTimeout(() => {
+            loadRecentTransactions();
+        }, 1000);
+    }
+    return result;
+};
+</script>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let userAccounts = [];
+let selectedAccount = null;
+let transferData = {};
+let transactionPin = '';
+
+// Set active menu item for payments page
+document.addEventListener('DOMContentLoaded', function() {
+    const paymentsMenuItem = document.querySelector('[data-section="payments"]');
+    if (paymentsMenuItem) {
+        paymentsMenuItem.classList.add('active');
+    }
+});
+
+// ============================================================================
+// TRANSFER FLOW
+// ============================================================================
+
+function handleTransfer() {
+    const accountNumber = document.getElementById('accountNumber').value.trim();
+    const ifscCode = document.getElementById('ifscCode').value.trim().toUpperCase();
+    const amount = document.getElementById('amount').value.trim();
+    
+    if (!accountNumber) {
+        alert('Please enter a recipient account number');
+        return;
+    }
+
+    if (!ifscCode) {
+        alert('Please enter IFSC code');
+        return;
+    }
+    
+    if (ifscCode.length !== 11) {
+        alert('IFSC code must be exactly 11 characters');
+        return;
+    }
+    
+    if (!amount || parseFloat(amount) <= 0) {
+        alert('Please enter a valid amount');
+        return;
+    }
+    
+    transferData = {
+        recipientAccount: accountNumber,
+        ifscCode: ifscCode,
+        amount: parseFloat(amount)
+    };
+    
+    openModal();
+}
+
+// ============================================================================
+// ACCOUNT SELECTION MODAL
+// ============================================================================
+
+function openModal() {
+    document.getElementById('accountModal').style.display = 'block';
+    fetchUserAccounts();
+}
+
+function closeModal() {
+    document.getElementById('accountModal').style.display = 'none';
+    // Don't reset selectedAccount here - it's needed for the PIN modal
+}
+
+async function fetchUserAccounts() {
+    const modalBody = document.getElementById('modalBody');
+    
+    try {
+        const response = await fetch('/api/dashboard-data');
+        
+        if (!response.ok) {
+            throw new Error('Failed to fetch account data');
+        }
+        
+        const data = await response.json();
+        userAccounts = data.banking_data.accounts || [];
+        
+        if (userAccounts.length === 0) {
+            modalBody.innerHTML = `
+                <div class="no-accounts">
+                    <p>No bank accounts found. Please link your bank account first.</p>
+                </div>
+            `;
+            return;
+        }
+        
+        displayAccounts();
+        
+    } catch (error) {
+        console.error('Error fetching accounts:', error);
+        modalBody.innerHTML = `
+            <div class="error-message">
+                Failed to load your accounts. Please try again.
+            </div>
+        `;
+    }
+}
+
+function displayAccounts() {
+    const modalBody = document.getElementById('modalBody');
+    
+    let accountsHTML = `
+        <div class="account-selection">
+            <label>Choose account to transfer from:</label>
+            <div class="account-list">
+    `;
+    
+    userAccounts.forEach((account, index) => {
+        const balance = parseFloat(account.balance || 0);
+        const canTransfer = balance >= transferData.amount;
+        
+        accountsHTML += `
+            <div class="account-option ${!canTransfer ? 'disabled' : ''}" 
+                 onclick="selectAccount(${index})" 
+                 data-index="${index}"
+                 style="${!canTransfer ? 'cursor: not-allowed; opacity: 0.6;' : ''}">
+                <div class="account-info">
+                    <div class="account-bank">${account.bank_name || 'Unknown Bank'}</div>
+                    <div class="account-number">A/C: ${account.account_number}</div>
+                    ${!canTransfer ? '<div style="color: #f44336; font-size: 12px; margin-top: 4px;">⚠️ Insufficient balance</div>' : ''}
+                </div>
+                <div class="account-balance">₹${balance.toLocaleString('en-IN', {maximumFractionDigits: 2})}</div>
+            </div>
+        `;
+    });
+    
+    accountsHTML += `
+            </div>
+        </div>
+        <div class="transfer-summary">
+            <div class="summary-row">
+                <span class="summary-label">Recipient Account:</span>
+                <span class="summary-value">${transferData.recipientAccount}</span>
+            </div>
+            <div class="summary-row">
+                <span class="summary-label">IFSC Code:</span>
+                <span class="summary-value">${transferData.ifscCode}</span>
+            </div>
+            <div class="summary-row">
+                <span class="summary-label">Transfer Amount:</span>
+                <span class="summary-value">₹${transferData.amount.toLocaleString('en-IN', {maximumFractionDigits: 2})}</span>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-cancel" onclick="closeModal()">Cancel</button>
+            <button class="btn btn-confirm" id="confirmBtn" disabled onclick="proceedToPin()">Next: Enter PIN</button>
+        </div>
+    `;
+    
+    modalBody.innerHTML = accountsHTML;
+}
+
+function selectAccount(index) {
+    const account = userAccounts[index];
+    const balance = parseFloat(account.balance || 0);
+    
+    if (balance < transferData.amount) {
+        alert('Insufficient balance in this account');
+        return;
+    }
+    
+    document.querySelectorAll('.account-option').forEach(option => {
+        option.classList.remove('selected');
+    });
+    
+    const selectedOption = document.querySelector(`[data-index="${index}"]`);
+    selectedOption.classList.add('selected');
+    
+    selectedAccount = account;
+    document.getElementById('confirmBtn').disabled = false;
+}
+
+// ============================================================================
+// PIN ENTRY MODAL
+// ============================================================================
+
+function proceedToPin() {
+    if (!selectedAccount) {
+        alert('Please select an account');
+        return;
+    }
+    
+    closeModal();
+    openPinModal();
+}
+
+function openPinModal() {
+    document.getElementById('pinModal').style.display = 'block';
+    transactionPin = '';
+    updatePinDisplay();
+    
+    // Update summary
+    if (selectedAccount) {
+        document.getElementById('pinFromAccount').textContent = selectedAccount.account_number;
+    }
+    document.getElementById('pinToAccount').textContent = transferData.recipientAccount;
+    document.getElementById('pinAmount').textContent = '₹' + transferData.amount.toLocaleString('en-IN');
+    
+    setTimeout(() => {
+        document.getElementById('pin1').focus();
+    }, 100);
+}
+
+function closePinModal() {
+    document.getElementById('pinModal').style.display = 'none';
+    transactionPin = '';
+    clearPinInputs();
+}
+
+function updatePinDisplay() {
+    const pinLength = transactionPin.length;
+    for (let i = 1; i <= 6; i++) {
+        const pinBox = document.getElementById(`pin${i}`);
+        if (i <= pinLength) {
+            pinBox.value = '•';
+            pinBox.classList.add('filled');
+        } else {
+            pinBox.value = '';
+            pinBox.classList.remove('filled');
+        }
+    }
+    
+    const confirmBtn = document.getElementById('pinConfirmBtn');
+    if (pinLength >= 4) {
+        confirmBtn.disabled = false;
+    } else {
+        confirmBtn.disabled = true;
+    }
+}
+
+function clearPinInputs() {
+    for (let i = 1; i <= 6; i++) {
+        const pinBox = document.getElementById(`pin${i}`);
+        pinBox.value = '';
+        pinBox.classList.remove('filled');
+    }
+    transactionPin = '';
+}
+
+function handlePinInput(element, index) {
+    const value = element.value;
+    
+    if (value && /^\d$/.test(value)) {
+        transactionPin += value;
+        updatePinDisplay();
+        
+        if (index < 6 && transactionPin.length < 6) {
+            document.getElementById(`pin${index + 1}`).focus();
+        }
+    }
+    
+    element.value = '';
+}
+
+function handlePinKeydown(event, index) {
+    if (event.key === 'Backspace') {
+        event.preventDefault();
+        
+        if (transactionPin.length > 0) {
+            transactionPin = transactionPin.slice(0, -1);
+            updatePinDisplay();
+            
+            if (index > 1) {
+                document.getElementById(`pin${index - 1}`).focus();
+            }
+        }
+    }
+    
+    if (event.key === 'Enter' && transactionPin.length >= 4) {
+        confirmTransfer();
+    }
+}
+
+// ============================================================================
+// TRANSFER CONFIRMATION WITH PIN
+// ============================================================================
+
+async function confirmTransfer() {
+    if (!selectedAccount) {
+        alert('Please select an account');
+        return;
+    }
+    
+    if (transactionPin.length < 4) {
+        alert('Please enter your transaction PIN (minimum 4 digits)');
+        return;
+    }
+    
+    const confirmBtn = document.getElementById('pinConfirmBtn');
+    confirmBtn.innerHTML = '⏳ Processing...';
+    confirmBtn.disabled = true;
+    
+    try {
+        const ifsc = transferData.ifscCode.toUpperCase();
+        let destinationBank = '';
+        
+        if (ifsc.startsWith('SBIN')) {
+            destinationBank = 'SBI';
+        } else if (ifsc.startsWith('HDFC')) {
+            destinationBank = 'HDFC';
+        } else if (ifsc.startsWith('ICIC')) {
+            destinationBank = 'ICICI';
+        } else {
+            alert('Unsupported bank. Please use SBI, HDFC, or ICICI accounts.');
+            confirmBtn.innerHTML = 'Confirm Transfer';
+            confirmBtn.disabled = false;
+            return;
+        }
+        
+        const transferPayload = {
+            source_account: selectedAccount.account_number,
+            recipient_account: transferData.recipientAccount,
+            recipient_ifsc: transferData.ifscCode,
+            amount: transferData.amount,
+            transaction_pin: transactionPin,
+            description: `Transfer to ${transferData.recipientAccount}`
+        };
+        
+        console.log('Sending transfer with PIN authentication');
+        
+        const response = await fetch('/api/transfer', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(transferPayload)
+        });
+        
+        const result = await response.json();
+        console.log('Transfer response:', result);
+        
+        if (response.ok && result.status === 'ok') {
+            closePinModal();
+            
+            document.getElementById('accountNumber').value = '';
+            document.getElementById('ifscCode').value = '';
+            document.getElementById('amount').value = '';
+            
+            alert(`✅ Transfer successful!\n\nTransaction ID: ${result.transaction_id}\nAmount: ₹${transferData.amount.toLocaleString('en-IN')}`);
+            
+            setTimeout(() => {
+                window.location.reload();
+            }, 2000);
+        } else {
+            const errorMsg = result.error || result.detail || 'Unknown error';
+            
+            if (errorMsg.includes('PIN') || errorMsg.includes('Invalid transaction PIN')) {
+                alert(`❌ Invalid PIN: ${errorMsg}\n\nPlease try again.`);
+                clearPinInputs();
+                document.getElementById('pin1').focus();
+            } else {
+                alert(`❌ Transfer failed: ${errorMsg}`);
+                closePinModal();
+            }
+            
+            confirmBtn.innerHTML = 'Confirm Transfer';
+            confirmBtn.disabled = false;
+        }
+        
+    } catch (error) {
+        console.error('Transfer error:', error);
+        alert('❌ Transfer failed. Please try again.');
+        confirmBtn.innerHTML = 'Confirm Transfer';
+        confirmBtn.disabled = false;
+    }
+}
+
+// ============================================================================
+// MODAL CLOSE HANDLERS
+// ============================================================================
+
+window.onclick = function(event) {
+    const accountModal = document.getElementById('accountModal');
+    const pinModal = document.getElementById('pinModal');
+    
+    if (event.target === accountModal) {
+        closeModal();
+    }
+    
+    if (event.target === pinModal) {
+        closePinModal();
+    }
+}
+
+// ============================================================================
+// FORM INPUT HANDLERS
+// ============================================================================
+
+document.getElementById('accountNumber').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        document.getElementById('ifscCode').focus();
+    }
+});
+
+document.getElementById('ifscCode').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        document.getElementById('amount').focus();
+    }
+});
+
+document.getElementById('amount').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        handleTransfer();
+    }
+});
+
+document.getElementById('amount').addEventListener('input', function(e) {
+    let value = e.target.value;
+    value = value.replace(/[^\d.]/g, '');
+    const parts = value.split('.');
+    if (parts.length > 2) {
+        value = parts[0] + '.' + parts.slice(1).join('');
+    }
+    e.target.value = value;
+});
+
+document.getElementById('accountNumber').addEventListener('input', function(e) {
+    let value = e.target.value;
+    value = value.replace(/\D/g, '');
+    if (value.length > 20) {
+        value = value.substring(0, 20);
+    }
+    e.target.value = value;
+});
+
+document.getElementById('ifscCode').addEventListener('input', function(e) {
+    let value = e.target.value.toUpperCase();
+    if (value.length > 11) {
+        value = value.substring(0, 11);
+    }
+    e.target.value = value;
+});
+</script>
+{% endblock %}

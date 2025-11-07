@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+
+{% block title %}VyomNext - Digilocker{% endblock %}
+
+{% block page_title %}Digital Document Locker{% endblock %}
+{% block page_subtitle %}Securely store and manage your important documents{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/digilocker.css') }}">
+{% endblock %}
+
+{% block page_content %}
+<!-- PIN Setup Modal -->
+<div class="modal-overlay" id="pinSetupModal" style="display: none;">
+    <div class="pin-modal">
+        <div class="pin-modal-header">
+            <div class="security-icon">🔒</div>
+            <h2 class="pin-modal-title">Setup Digilocker PIN</h2>
+            <p class="pin-modal-subtitle">Create a 6-digit PIN to secure your documents</p>
+        </div>
+        <div class="pin-input-container">
+            <div class="pin-inputs" id="setupPinInputs">
+                <input type="password" maxlength="1" class="pin-digit" data-index="0">
+                <input type="password" maxlength="1" class="pin-digit" data-index="1">
+                <input type="password" maxlength="1" class="pin-digit" data-index="2">
+                <input type="password" maxlength="1" class="pin-digit" data-index="3">
+                <input type="password" maxlength="1" class="pin-digit" data-index="4">
+                <input type="password" maxlength="1" class="pin-digit" data-index="5">
+            </div>
+            <div class="pin-message" id="setupPinMessage"></div>
+        </div>
+        <div class="pin-actions">
+            <button class="pin-btn" id="setupPinBtn" onclick="setupPin()" disabled>Set PIN</button>
+        </div>
+    </div>
+</div>
+
+<!-- PIN Verification Modal -->
+<div class="modal-overlay" id="pinVerifyModal" style="display: none;">
+    <div class="pin-modal">
+        <div class="pin-modal-header">
+            <div class="security-icon">🔓</div>
+            <h2 class="pin-modal-title">Enter Your PIN</h2>
+            <p class="pin-modal-subtitle">Enter your 6-digit PIN to access Digilocker</p>
+        </div>
+        <div class="pin-input-container">
+            <div class="pin-inputs" id="verifyPinInputs">
+                <input type="password" maxlength="1" class="pin-digit" data-index="0">
+                <input type="password" maxlength="1" class="pin-digit" data-index="1">
+                <input type="password" maxlength="1" class="pin-digit" data-index="2">
+                <input type="password" maxlength="1" class="pin-digit" data-index="3">
+                <input type="password" maxlength="1" class="pin-digit" data-index="4">
+                <input type="password" maxlength="1" class="pin-digit" data-index="5">
+            </div>
+            <div class="pin-message" id="verifyPinMessage"></div>
+        </div>
+        <div class="pin-actions">
+            <button class="pin-btn" id="verifyPinBtn" onclick="verifyPin()" disabled>Unlock</button>
+            <button class="pin-btn-secondary" onclick="resetPin()">Forgot PIN?</button>
+        </div>
+    </div>
+</div>
+
+<!-- Landing Page -->
+<div class="digilocker-landing fade-in" id="digilockerLanding">
+    <div class="security-badge">
+        🛡 Bank-Grade Security
+    </div>
+                
+    <div class="locker-visual">
+        <div class="locker-container">
+            <div class="locker-body">
+                <div class="locker-documents"></div>
+                <div class="locker-lock">🔒</div>
+            </div>
+            <div class="locker-handle"></div>
+        </div>
+    </div>
+
+    <h2 style="font-size: 2rem; font-weight: 700; color: #2c3e50; margin-bottom: 1rem;">
+        Your Personal Digital Vault
+    </h2>
+    <p style="color: #6c757d; font-size: 1.1rem; margin-bottom: 2rem; max-width: 600px; margin-left: auto; margin-right: auto; line-height: 1.6;">
+        Store, organize, and access your important documents with military-grade encryption. 
+        Your digital life, secured and simplified.
+    </p>
+
+    <button class="open-locker-btn" onclick="openDigilocker()">
+        🚀 Open My Digilocker
+    </button>
+</div>
+
+<!-- Main Digilocker Container -->
+<div class="digilocker-container" id="digilockerMain" style="display: none;">
+    <!-- Upload Section -->
+    <div class="upload-section">
+        <div class="upload-card">
+            <div class="upload-header">
+                <div class="upload-icon">📄</div>
+                <div class="upload-text">
+                    <h3>Upload Documents</h3>
+                    <p>Add PDF documents to your secure locker</p>
+                </div>
+            </div>
+            <div class="upload-area" onclick="triggerFileUpload()">
+                <div class="upload-content">
+                    <svg class="upload-svg" viewBox="0 0 24 24" width="48" height="48">
+                        <path fill="currentColor" d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+                    </svg>
+                    <div class="upload-primary">Click to upload PDF documents</div>
+                    <div class="upload-secondary">Or drag and drop files here</div>
+                    <div class="upload-hint">Maximum file size: 50MB per document</div>
+                </div>
+            </div>
+            <input type="file" id="fileInput" multiple accept=".pdf" style="display: none;" onchange="handleFileUpload(event)">
+        </div>
+    </div>
+
+    <!-- Documents Grid -->
+    <div class="documents-section">
+        <div class="documents-header">
+            <h2>Your Documents</h2>
+            <div class="documents-count">
+                <span id="documentsCount">0</span> documents stored
+            </div>
+        </div>
+        
+        <div class="documents-grid" id="documentsGrid">
+            <div class="empty-state" id="emptyState">
+                <div class="empty-icon">📁</div>
+                <h3>No documents yet</h3>
+                <p>Upload your first PDF document to get started</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- PDF Viewer Modal -->
+<div class="modal-overlay" id="pdfViewerModal" style="display: none;">
+    <div class="pdf-modal">
+        <div class="pdf-modal-header">
+            <h3 id="pdfTitle">Document Viewer</h3>
+            <button class="close-btn" onclick="closePdfViewer()">×</button>
+        </div>
+        <div class="pdf-modal-content">
+            <div class="pdf-preview" id="pdfPreview">
+                <div class="pdf-icon">📄</div>
+                <div class="pdf-info">
+                    <h4 id="pdfFileName">Document Name</h4>
+                    <p>This document is ready to view. Click the download button to save it to your device.</p>
+                    <div class="pdf-actions">
+                        <button class="pdf-action-btn download-btn" id="downloadBtn">
+                            💾 Download Document
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay" style="display: none;">
+    <div class="loading-content">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Processing documents...</div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/digilocker.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VyomNext - Banking Assistant</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .chat-wrapper {
+      width: 100%;
+      max-width: 900px;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 25px 70px rgba(0, 0, 0, 0.35);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      height: 95vh;
+      max-height: 800px;
+    }
+
+    .chat-header {
+      background: linear-gradient(135deg, #f35b5b 0%, #e63946 100%);
+      padding: 24px;
+      color: white;
+    }
+
+    .brand { font-size: 26px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 4px; }
+    .small { font-size: 14px; opacity: 0.9; }
+
+    .chat-body {
+      flex: 1;
+      padding: 22px;
+      overflow-y: auto;
+      background: #f8f9fa;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .chat-body::-webkit-scrollbar { width: 6px; }
+    .chat-body::-webkit-scrollbar-track { background: transparent; }
+    .chat-body::-webkit-scrollbar-thumb { background: #cbd5e0; border-radius: 3px; }
+
+    .message { display: flex; align-items: flex-end; animation: slideIn 0.3s ease; }
+    @keyframes slideIn { from {opacity: 0; transform: translateY(10px);} to {opacity: 1; transform: translateY(0);} }
+
+    .message.user { justify-content: flex-end; }
+
+    .bubble {
+      max-width: 75%;
+      padding: 14px 18px;
+      border-radius: 18px;
+      font-size: 15px;
+      line-height: 1.5;
+      word-wrap: break-word;
+    }
+
+    .bubble.bot { background: white; color: #2d3748; border-bottom-left-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);}
+    .bubble.user { background: linear-gradient(135deg, #f35b5b 0%, #e63946 100%); color: white; border-bottom-right-radius: 4px; box-shadow: 0 2px 8px rgba(243,91,91,0.3);}
+
+    .chat-footer { background: white; border-top: 1px solid #e2e8f0; padding: 18px; }
+
+    .input-group { display: flex; gap: 8px; margin-bottom: 14px; }
+
+    input, select {
+      flex: 1;
+      padding: 14px 18px;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      font-size: 15px;
+      transition: all 0.2s;
+      outline: none;
+    }
+
+    input:focus, select:focus { border-color: #f35b5b; }
+    input::placeholder { color: #a0aec0; }
+
+    button {
+      padding: 14px 28px;
+      background: linear-gradient(135deg, #f35b5b 0%, #e63946 100%);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      white-space: nowrap;
+    }
+
+    button:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(243,91,91,0.4); }
+    button:active { transform: translateY(0); }
+    button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    .hidden { display: none; }
+
+    .info { font-size: 13px; color: #718096; margin-bottom: 12px; padding: 8px 12px; background: #edf2f7; border-radius: 8px; }
+    .error { font-size: 13px; color: #e53e3e; margin-bottom: 12px; padding: 8px 12px; background: #fff5f5; border-radius: 8px; border-left: 3px solid #e53e3e; }
+    
+    .bank-btn {
+      padding: 10px 22px;
+      margin-right: 8px;
+      margin-bottom: 8px;
+      background: white;
+      border: 2px solid #e2e8f0;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: 600;
+      color: #2d3748;
+      transition: all 0.2s;
+    }
+
+    .bank-btn:hover { border-color: #f35b5b; color: #f35b5b; }
+    .bank-btn.selected { background: linear-gradient(135deg, #f35b5b 0%, #e63946 100%); color: white; border-color: #e63946; }
+
+    .transfer-row { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 10px; }
+    @media (max-width: 650px) {
+      .transfer-row { grid-template-columns: 1fr 1fr; }
+      #toAcc { grid-column: 1 / -1; }
+    }
+
+    .loading { text-align: center; padding: 20px; color: #718096; }
+  </style>
+</head>
+<body>
+  <div class="chat-wrapper">
+    <div class="chat-header">
+      <div class="brand">VyomNext Assistant</div>
+      <div class="small">Secure banking chatbot</div>
+    </div>
+
+    <div id="chat" class="chat-body">
+      <div class="loading">Initializing chat...</div>
+    </div>
+
+    <div class="chat-footer">
+      <div id="bankSelect" class="hidden"></div>
+      <div id="messageArea" class="hidden">
+        <div class="input-group">
+          <input id="messageInput" placeholder="Ask about balance, transactions..." />
+          <button id="sendBtn">Send</button>
+        </div>
+        <div class="transfer-row">
+          <input id="toAcc" placeholder="To Account" />
+          <select id="toBank">
+            <option value="SBI">SBI</option>
+            <option value="HDFC">HDFC</option>
+            <option value="ICICI">ICICI</option>
+          </select>
+          <input id="amount" placeholder="Amount" type="number" />
+          <button id="transferBtn">Transfer</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const chatBox = document.getElementById('chat');
+    const bankSelectDiv = document.getElementById('bankSelect');
+    const messageArea = document.getElementById('messageArea');
+    const messageInput = document.getElementById('messageInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const toAcc = document.getElementById('toAcc');
+    const toBank = document.getElementById('toBank');
+    const amount = document.getElementById('amount');
+    const transferBtn = document.getElementById('transferBtn');
+
+    let active = { aadhaar: null, bank: null, account: null };
+    let userAccounts = [];
+
+    function addMessage(text, who='bot'){
+      const wrap = document.createElement('div');
+      wrap.className = 'message ' + (who === 'user' ? 'user' : 'bot');
+      const bubble = document.createElement('div');
+      bubble.className = 'bubble ' + (who === 'user' ? 'user' : 'bot');
+      bubble.innerText = text;
+      wrap.appendChild(bubble);
+      chatBox.appendChild(wrap);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function showError(message) {
+      const errorDiv = document.createElement('div');
+      errorDiv.className = 'error';
+      errorDiv.innerText = message;
+      chatBox.appendChild(errorDiv);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    async function initializeChat() {
+      chatBox.innerHTML = '';
+      
+      try {
+        // Check authentication first
+        const authRes = await fetch('/check-auth');
+        if (!authRes.ok) {
+          showError('You are not logged in. Please login to use the chat assistant.');
+          addMessage('Please login at /login to continue.', 'bot');
+          return;
+        }
+
+        const authData = await authRes.json();
+        if (!authData.authenticated) {
+          showError('Authentication required');
+          addMessage('Please login to access the banking assistant.', 'bot');
+          return;
+        }
+
+        addMessage('Welcome! Loading your accounts...', 'bot');
+
+        // Get user's accounts using session authentication
+        const accountsRes = await fetch('/api/user/accounts');
+        if (!accountsRes.ok) {
+          throw new Error('Failed to fetch accounts');
+        }
+
+        const accountsData = await accountsRes.json();
+        
+        if (!accountsData.success || !accountsData.accounts || accountsData.accounts.length === 0) {
+          addMessage('No bank accounts found linked to your profile.', 'bot');
+          return;
+        }
+
+        userAccounts = accountsData.accounts;
+        
+        // Group accounts by bank
+        const accountsByBank = {};
+        userAccounts.forEach(acc => {
+          const bank = acc.bank_code;
+          if (!accountsByBank[bank]) {
+            accountsByBank[bank] = [];
+          }
+          accountsByBank[bank].push(acc);
+        });
+
+        // If multiple banks, let user select
+        if (Object.keys(accountsByBank).length > 1) {
+          bankSelectDiv.classList.remove('hidden');
+          bankSelectDiv.innerHTML = '<div class="info">You have accounts in multiple banks. Select one:</div>';
+          
+          for(const [bank, accounts] of Object.entries(accountsByBank)){
+            const btn = document.createElement('button');
+            btn.className = 'bank-btn';
+            btn.innerText = bank.toUpperCase() + ` (${accounts.length} account${accounts.length > 1 ? 's' : ''})`;
+            btn.onclick = ()=>{ 
+              document.querySelectorAll('.bank-btn').forEach(x => x.classList.remove('selected'));
+              btn.classList.add('selected');
+              const acc = accounts[0];
+              active.bank = bank;
+              active.account = acc.account_number;
+              addMessage(`Selected ${bank.toUpperCase()} - Account ${active.account}`);
+              bankSelectDiv.classList.add('hidden');
+              messageArea.classList.remove('hidden');
+            };
+            bankSelectDiv.appendChild(btn);
+          }
+        } else {
+          // Single bank - auto-select
+          const bank = Object.keys(accountsByBank)[0];
+          const acc = accountsByBank[bank][0];
+          active.bank = bank;
+          active.account = acc.account_number;
+          addMessage(`Connected to ${bank.toUpperCase()} - Account ${active.account}`);
+          addMessage('How can I help you today? You can ask about your balance, recent transactions, or make a transfer.', 'bot');
+          messageArea.classList.remove('hidden');
+        }
+
+      } catch(err) {
+        console.error('Initialization error:', err);
+        showError('Failed to initialize chat: ' + err.message);
+      }
+    }
+
+    sendBtn.addEventListener('click', async ()=>{
+      const msg = messageInput.value.trim();
+      if(!msg) return;
+      
+      if(!active.bank || !active.account) {
+        addMessage('Please select a bank account first.', 'bot');
+        return;
+      }
+
+      addMessage(msg, 'user');
+      messageInput.value = '';
+      
+      sendBtn.disabled = true;
+      sendBtn.innerText = 'Sending...';
+
+      try {
+        const res = await fetch('/api/chat', {
+          method:'POST', 
+          headers:{'Content-Type':'application/json'}, 
+          body: JSON.stringify({
+            bank: active.bank, 
+            account_number: active.account, 
+            message: msg
+          })
+        });
+        
+        const j = await res.json();
+        addMessage(j.reply || (j.error || 'No response'));
+      } catch(err) {
+        addMessage('Error: Could not send message. ' + err.message, 'bot');
+      } finally {
+        sendBtn.disabled = false;
+        sendBtn.innerText = 'Send';
+      }
+    });
+
+    transferBtn.addEventListener('click', async ()=>{
+      const tto = toAcc.value.trim();
+      const tb = toBank.value;
+      const amt = parseFloat(amount.value);
+      
+      if(!tto || !amt) { 
+        alert('Please provide recipient account and amount'); 
+        return; 
+      }
+      
+      if(!active.bank || !active.account) {
+        addMessage('Please select a bank account first.', 'bot');
+        return;
+      }
+
+      addMessage(`Transfer request: ₹${amt.toFixed(2)} → ${tto} (${tb.toUpperCase()})`, 'user');
+      
+      transferBtn.disabled = true;
+      transferBtn.innerText = 'Processing...';
+
+      try {
+        const res = await fetch('/api/transfer_v2', {
+          method:'POST', 
+          headers:{'Content-Type':'application/json'}, 
+          body: JSON.stringify({
+            from_bank: active.bank, 
+            to_bank: tb, 
+            from_account: active.account, 
+            to_account: tto, 
+            amount: amt
+          })
+        });
+        
+        const j = await res.json();
+        
+        if(j.status === 'ok'){ 
+          addMessage('✅ Transfer successful! Transaction ID: ' + j.transaction_id, 'bot'); 
+          toAcc.value = '';
+          amount.value = '';
+        } else { 
+          addMessage('❌ Transfer failed: ' + (j.error || JSON.stringify(j)), 'bot'); 
+        }
+      } catch(err) {
+        addMessage('Error: Transfer request failed. ' + err.message, 'bot');
+      } finally {
+        transferBtn.disabled = false;
+        transferBtn.innerText = 'Transfer';
+      }
+    });
+
+    messageInput.addEventListener('keypress', (e) => { 
+      if(e.key==='Enter' && !sendBtn.disabled) sendBtn.click(); 
+    });
+
+    // Initialize chat on page load
+    initializeChat();
+  </script>
+</body>
+</html>

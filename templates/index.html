@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VyomNext - Smart Banking Experience</title> 
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <nav class="nav-container">
+            <a href="{{ url_for('home') }}" class="logo">VyomNext</a>
+            <div class="nav-links">
+                <a href="{{ url_for('home') }}" class="nav-link">Home</a>
+                <a href="{{ url_for('login') }}" class="nav-link">Login</a>
+                <a href="{{ url_for('register') }}" class="btn btn-register">Register</a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-container">
+            <div class="hero-content">
+                <h1>One Platform to Manage All Your <span class="highlight">Bank Accounts</span></h1>
+                <p>Securely connect, monitor, and manage multiple bank accounts from different banks in one unified dashboard. Experience the next-gen smart banking experience.</p>
+                <div class="hero-buttons">
+                    <a href="{{ url_for('login') }}" class="btn btn-primary">Login</a>
+                    <a href="{{ url_for('register') }}" class="btn btn-secondary">Create Account</a>
+                </div>
+            </div>
+            <div class="hero-visual">
+                <div class="banking-illustration">
+                    <div class="people-group">
+                        <div class="person">👤</div>
+                        <div class="person">👥</div>
+                        <div class="person">💼</div>
+                        <div class="person">🏦</div>
+                    </div>
+                    <div class="dashboard-preview"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features">
+        <div class="features-container">
+            <h2>Why Choose VyomNext?</h2>
+            <p>Experience the future of banking with our comprehensive platform. Secure. Simple. AI-powered.</p>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🔒</div>
+                    <h3>Secure</h3>
+                    <p>Bank-grade security with 256-bit encryption and multi-factor authentication to keep your data safe.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">🏦</div>
+                    <h3>Unified</h3>
+                    <p>Connect accounts from multiple banks and view all your finances in one comprehensive dashboard.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">💸</div>
+                    <h3>Easy Transfers</h3>
+                    <p>Transfer money between your accounts instantly with our simple and intuitive interface.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
+</body>
+</html>
